@@ -1,4 +1,6 @@
-import SlideView from "../Components/Slide/SlideView";
+import SlideView from "../Components/Slide/View/SlideView";
+import Controller from "../Components/Slide/Controller/ViewVontroller";
+import DataHandler from "../Components/Slide/Data/DataProvider";
 
 
 function Image(){
@@ -12,7 +14,7 @@ function MainPage(){
         textAlign:'center', 
         backgroundColor:'black'   
         }}>
-            <SlideView tiitle="Thriller" item={<Image/>}/>
+            <SlideView tiitle="Thriller" controller={Controller(50,300,150,DataHandler())}/>
       
     </div>
     </>);
