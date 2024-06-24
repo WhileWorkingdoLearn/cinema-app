@@ -1,28 +1,81 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
+import axios, { AxiosResponse } from "axios";
+import { useState } from "react";
 import { ApiKeys } from "../../../Environment/Environment";
+import DLList from "../../../Model/DLList";
 
-export interface IDataProvider {
-        fetchData:()=> void,
-        getData: IMovieItem[]
+export interface IDataProvider<T> {
+  fetchData: () => void;
+  data: T;
 }
 
 export interface IMovieItem {
-    id: number;
-    overview:string;
-    poster_path: string;
-    title: string;
-  }
-  
+  id: number;
+  overview: string;
+  poster_path: string;
+  title: string;
+}
+
 export interface IMovieListResponse {
-    description: string;
-    id: number;
-    iso_639_1: string;
-    item_count: number;
-    items: IMovieItem[];
-    name: string;
-    page: number;
+  description: string;
+  id: number;
+  iso_639_1: string;
+  item_count: number;
+  items: IMovieItem[];
+  name: string;
+  page: number;
+}
+
+export function GetDataAxios<T extends {}>(
+  url: string,
+  onDataCHanged: (data: T) => void,
+) {
+  const client = axios.create({
+    baseURL: "https://api.themoviedb.org/3/list/",
+    timeout: 3000,
+    headers: {
+      Authorization: `Bearer ${ApiKeys.TMDB.readerKey}`,
+    },
+  });
+
+  async function axiosGetJsonData(url: string) {
+    try {
+      const response: AxiosResponse = await client.get(url);
+      const responseData: T = response.data;
+      console.log(responseData);
+      onDataCHanged(responseData);
+    } catch (error: any) {
+      console.log(error.message);
+    }
   }
+
+  axiosGetJsonData(url);
+}
+
+//IMovieListResponse
+export default function DataHandler(): IDataProvider<DLList<IMovieItem>> {
+  const [movieData, setMovieData] = useState<DLList<IMovieItem>>();
+  //"8304403?language=en-US&page=1"
+  const fetchAxios = () => {
+    GetDataAxios<IMovieListResponse>(
+      "8304403?language=en-US&page=1",
+      MapMovieListToDataFields,
+    );
+  };
+
+  const MapMovieListToDataFields = (data: IMovieListResponse) => {
+    const MovieList = new DLList<IMovieItem>();
+    MovieList.fromArray(data.items);
+    setMovieData(MovieList);
+  };
+
+  return {
+    fetchData: () => {
+      fetchAxios();
+    },
+    data: movieData,
+  } as IDataProvider<DLList<IMovieItem>>;
+}
+
 /*
 export type MovieGengre = [
       {
@@ -104,27 +157,3 @@ export type MovieGengre = [
     ];
 
     */
-
-export default function DataHandler():IDataProvider {
-    const [data,setData] = useState<IMovieItem[]>([]);
-    const client = axios.create({
-        baseURL:'https://api.themoviedb.org/3/list/',
-        timeout:1000,
-        headers: { Authorization: `Bearer ${ApiKeys.TMDB.readerKey}` }
-    });
-
-    const getData = () => {
-        client.get<IMovieListResponse>('8304403?language=en-US&page=1').then(response => {
-            console.log(response.data.items);
-            setData(response.data.items);
-        }
-        ).catch();
-    }
-
-    return {
-        fetchData:() =>{
-           getData();
-        },
-        getData:data
-    };
-}
