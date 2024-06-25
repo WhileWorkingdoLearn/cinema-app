@@ -1,8 +1,39 @@
-import { ForwardedRef, forwardRef, ReactNode, useEffect, useRef } from "react";
+import { ForwardedRef, forwardRef, useEffect, useRef } from "react";
 import "./slideView.css";
 import { IViewController } from "../Controller/ViewVontroller";
 import { IMovieItem } from "../Data/DataProvider";
 
+
+export default function SlideView(){
+  const ButtonEvent = (dir:'prev'|'next')=>{ console.log(dir)};
+  return (
+    <div className="Frame">
+    <div className="Button" onClick={() => {ButtonEvent("prev")}}>Button</div>
+    <div className="Viewport">
+        <div className="Container">
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+            <div className="Item">Item</div>
+        </div>
+    </div>
+    <div className="Button"  onClick={() => {ButtonEvent("next")}}>Button</div>
+</div>
+  );
+}
+/*
 function SlideView(params: {
   tiitle: string;
   controller: IViewController<IMovieItem>;
@@ -17,19 +48,20 @@ function SlideView(params: {
   } = params.controller;
 
   const viewContainerRef = useRef<HTMLDivElement>(null);
-  const cardContainerRef = useRef<HTMLDivElement>(null);
+  const sldeContainerRef = useRef<HTMLDivElement>(null);
 
   const buttonEvent = (dir: "next" | "prev") => {
     onButtonClick(dir);
   };
 
   const update = () => {
-    updateCardCount(viewContainerRef);
+    updateCardCount(sldeContainerRef);
+    
   };
 
   useEffect(() => {
     Init();
-    updateCardCount(viewContainerRef);
+    updateCardCount(sldeContainerRef);
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
@@ -54,19 +86,19 @@ function SlideView(params: {
           </button>
           <div className="ViewContainer" ref={viewContainerRef}>
             <ForwardRefCardContainer
-              ref={cardContainerRef}
+              ref={sldeContainerRef}
               containerLength={curentCardCount}
               translateX={translateX}
               renderItems={renderData.prevData}
             />
             <ForwardRefCardContainer
-              ref={cardContainerRef}
+              ref={sldeContainerRef}
               containerLength={curentCardCount}
               translateX={translateX}
               renderItems={renderData.viewData}
             />
             <ForwardRefCardContainer
-              ref={cardContainerRef}
+              ref={sldeContainerRef}
               containerLength={curentCardCount}
               translateX={translateX}
               renderItems={renderData.nextData}
@@ -89,7 +121,6 @@ function SlideView(params: {
 function ItemContainer(params: {
   width: number;
   height: number;
-  index: number;
   item: string;
 }) {
   const width = params.width;
@@ -104,6 +135,7 @@ function ItemContainer(params: {
       <img
         src={`https://image.tmdb.org/t/p/w300/${params.item}`}
         className="Image"
+        loading="lazy"
         alt="Epmty"
       />
     </div>
@@ -119,33 +151,52 @@ const ForwardRefCardContainer = forwardRef<
       transformDirPercentage: number;
       transitionDuration: number;
     };
-    renderItems: IMovieItem[];
+    renderItems?: (IMovieItem|null)[];
   }
 >((props, ref) => {
-  return (
-    <div
-      ref={ref}
-      className="CardContainer"
-      style={{
-        transform: `translateX(${props.translateX.transformDirPercentage}%)`,
-        transition: `${props.translateX.transitionDuration}ms`,
-      }}
-    >
-      {Array.from({ length: props.containerLength }, (_, i) => i).map(
+
+  if(!props.renderItems){
+    return  <div
+    ref={ref}
+    className="SlideContainer"
+    style={{
+      transform: `translateX(${props.translateX.transformDirPercentage}%)`,
+      transition: `${props.translateX.transitionDuration}ms`,
+    }}
+  >
+    {Array.from({ length: props.containerLength }, (_, i) => i).map(
         (value: number) => {
           return (
             <ItemContainer
               key={value}
               height={100}
               width={150}
-              index={value}
-              item={props.renderItems[value].poster_path}
+              item={"item"}
             />
           );
         },
       )}
+  </div>
+  }
+
+  return (
+    <div
+      ref={ref}
+      className="SlideContainer"
+      style={{
+        transform: `translateX(${props.translateX.transformDirPercentage}%)`,
+        transition: `${props.translateX.transitionDuration}ms`,
+      }}
+    >
+     {
+        props.renderItems.map((value:IMovieItem|null,index:number) => {
+          if(value=== null) return <div>empty</div>;
+        return <ItemContainer width={150} height={100} key={index} item={value.poster_path}/>})
+      }
     </div>
   );
 });
 
 export default SlideView;
+
+*/

@@ -14,7 +14,7 @@ function MainPage(){
         textAlign:'center', 
         backgroundColor:'black'   
         }}>
-            <SlideView tiitle="Thriller" controller={Controller(50,300,150,DataHandler())}/>
+            <SlideView/>
       
     </div>
     </>);

@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import { useState } from "react";
 import { ApiKeys } from "../../../Environment/Environment";
-import DLList from "../../../Model/DLList";
+import slice from "../../../Redux/slice";
 
 export interface IDataProvider<T> {
   fetchData: () => void;
@@ -52,8 +52,8 @@ export function GetDataAxios<T extends {}>(
 }
 
 //IMovieListResponse
-export default function DataHandler(): IDataProvider<DLList<IMovieItem>> {
-  const [movieData, setMovieData] = useState<DLList<IMovieItem>>();
+export default function DataHandler(): IDataProvider<IMovieItem[]> {
+  const [movieData, setMovieData] = useState<IMovieItem[]>();
   //"8304403?language=en-US&page=1"
   const fetchAxios = () => {
     GetDataAxios<IMovieListResponse>(
@@ -63,9 +63,7 @@ export default function DataHandler(): IDataProvider<DLList<IMovieItem>> {
   };
 
   const MapMovieListToDataFields = (data: IMovieListResponse) => {
-    const MovieList = new DLList<IMovieItem>();
-    MovieList.fromArray(data.items);
-    setMovieData(MovieList);
+    setMovieData(data.items.slice());
   };
 
   return {
@@ -73,7 +71,7 @@ export default function DataHandler(): IDataProvider<DLList<IMovieItem>> {
       fetchAxios();
     },
     data: movieData,
-  } as IDataProvider<DLList<IMovieItem>>;
+  } as IDataProvider<IMovieItem[]>;
 }
 
 /*
