@@ -4,135 +4,47 @@
   padding: 0;
 }
 
-.MainFrame {
+.Frame {
   position: absolute;
-  width: 100%;
-  height: 100px;
-  display: flex;
-  background-color: black;
-  margin-top: 10px;
-  justify-content: center;
-}
-
-.Title {
-  position: absolute;
-  width: 100%;
-  top: 0;
-  right: 0;
-  padding-bottom: 10px;
-  background-color: black;
-  color: white;
-  text-align: left;
-}
-
-.ComponentGrid {
-  position: relative;
   width: 80%;
-  height: 100%;
   display: flex;
-  justify-content: space-between; /* Changed from center to space-between */
-  align-items: stretch;
-  z-index: 0;
+  justify-content: center;
+  flex-direction: row;
+  overflow-x: hidden;
 }
 
-.SlideButtonLeft {
-  height: 100%;
-  width: 150px;
-  color: white;
-  background-color: transparent;
-  border-width: 0;
-  font-family: inherit;
-  font-size: inherit;
-  font-style: inherit;
-  font-weight: inherit;
-  line-height: inherit;
-  padding: 0;
+.Button {
+  width: 10%;
+  padding: 5px;
+  background-color: green;
 }
-
-.SlideButtonRight {
-  height: 100%;
-  width: 150px;
-  color: white;
-  background-color: transparent;
-  border-width: 0;
-  font-family: inherit;
-  font-size: inherit;
-  font-style: inherit;
-  font-weight: inherit;
-  line-height: inherit;
-  padding: 0;
-}
-
-.SlideButtonRight:hover {
-  transform: scaleX(1.15) !important;
-  background-color: darkslategray;
-}
-
-.SlideButtonLeft:hover {
-  transform: scaleX(1.15) !important;
-  background-color: darkslategray;
-}
-
-.SlideButtonRight .SlideButtonLeft:before {
-  content: "";
-  position: absolute;
-  background-image: linear-gradient(to right, transparent, #000);
-  top: 0;
-  bottom: 0;
-  left: 100%;
-  width: 275px;
-}
-
-.ViewContainer {
-  position: relative;
+.Viewport {
   width: 80%;
-  height: 100%;
   display: flex;
-  overflow: hidden;
-  justify-content: center;
-}
-
-.CardContainer {
-  position: relative;
-  background-color: black;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  z-index: 0;
-}
-
-.ItemContainer {
-  position: relative;
   background-color: brown;
-  width: 150px;
-  height: 100%;
+  justify-content: space-evenly;
+  overflow-x: hidden;
+}
+.Container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-left: 5px;
-  margin-right: 5px;
-  transition: transform 300ms ease 100ms;
-  z-index: 0;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: space-evenly;
+  background-color: blue;
+  translate: transitionX(0%);
+  transition-duration: 0ms;
 }
 
-.CardContainer:hover .ItemContainer {
-  transform: translateX(-25%);
-}
-
-.ItemContainer:hover ~ .ItemContainer {
-  transform: translateX(25%);
-}
-
-.ItemContainer:hover {
-  transform: scale(1.25) !important;
-}
-
-.Image{
-  position: relative;
-  height: 100%;
-  width: 100%;
+.SubFrame {
   display: flex;
-  justify-content:center;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.Item {
+  flex: 1;
+  width: 100px;
+  background-color: red;
+  margin: 5px;
+  text-align: center;
 }

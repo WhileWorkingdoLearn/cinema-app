@@ -1,23 +1,26 @@
 import SlideView from "../Components/Slide/View/SlideView";
-import Controller from "../Components/Slide/Controller/ViewVontroller";
+import useVviewController from "../Components/Slide/Controller/ViewController";
 import DataHandler from "../Components/Slide/Data/DataProvider";
 
-
-function Image(){
-    return (<div>Hello</div>);
+function Image() {
+  return <div>Hello</div>;
 }
 
-
-function MainPage(){
-    return (<>
-    <div style={{  
-        textAlign:'center', 
-        backgroundColor:'black'   
-        }}>
-            <SlideView tiitle="Thriller" controller={Controller(50,300,150,DataHandler())}/>
-      
-    </div>
-    </>);
+function MainPage() {
+  return (
+    <>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          backgroundColor: "black",
+          flex: "100",
+        }}
+      >
+        <SlideView controller={useVviewController()} />
+      </div>
+    </>
+  );
 }
 
 export default MainPage;

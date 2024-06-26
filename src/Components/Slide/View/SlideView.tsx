@@ -1,8 +1,98 @@
-import { ForwardedRef, forwardRef, ReactNode, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import { IviewController } from "../Controller/ViewController";
 import "./slideView.css";
-import { IViewController } from "../Controller/ViewVontroller";
-import { IMovieItem } from "../Data/DataProvider";
 
+export default function SlideView(params: { controller: IviewController }) {
+  const {
+    slotCountView,
+    slotCountSide,
+    animTime,
+    animPercent,
+    onWindowsWidthChange,
+    onButtonClick,
+  } = params.controller;
+
+  const viewContainerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sideContainerRef = useRef<HTMLDivElement>(null);
+
+  const ButtonEvent = (dir: "prev" | "next") => {
+    console.log(dir);
+    onButtonClick(dir, containerRef.current?.clientWidth || 0);
+  };
+
+  const update = () => {
+    if (viewContainerRef.current) {
+      onWindowsWidthChange(viewContainerRef.current.clientWidth || 0);
+    }
+  };
+
+  useEffect(() => {
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  return (
+    <div className="Frame">
+      <div
+        className="Button"
+        onClick={() => {
+          ButtonEvent("prev");
+        }}
+      >
+        Button
+      </div>
+      <div className="Viewport" ref={viewContainerRef}>
+        <div
+          className="Container"
+          ref={containerRef}
+          style={{
+            transform: `translateX(${animPercent}%)`,
+            transition: `${animTime}ms`,
+          }}
+        >
+          <div className="Container Subframe" ref={sideContainerRef}>
+            {[...Array(slotCountSide).keys()].map((value) => (
+              <div key={value} className="Item">
+                prevSide:{value + 1}
+              </div>
+            ))}
+          </div>
+          <div className="Container Subframe">
+            {[...Array(slotCountView).keys()].map((value) => (
+              <div key={value} className="Item">
+                viewSide:{value + 1}
+              </div>
+            ))}
+          </div>
+          <div className=" Container Subframe">
+            {[...Array(slotCountSide).keys()].map((value) => (
+              <div key={value} className="Item">
+                nextSide:{value + 1}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div
+        className="Button"
+        onClick={() => {
+          ButtonEvent("next");
+        }}
+      >
+        Button
+      </div>
+    </div>
+  );
+}
+
+/*  
+{[...Array(cardCountView).keys()].map((index) => (
+            <div className="Item">{index}</div>
+          ))} */
+
+/*
 function SlideView(params: {
   tiitle: string;
   controller: IViewController<IMovieItem>;
@@ -149,3 +239,4 @@ const ForwardRefCardContainer = forwardRef<
 });
 
 export default SlideView;
+*/
