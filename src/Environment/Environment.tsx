@@ -12,6 +12,12 @@ export const ApiKeys = {
     apiKey:'7689b311cccd1be4ae2da35a21b73d8e'
     }
 }
+export const ApiRequestUrls = {
+    TMDB:{
+        movieList: 'https://api.themoviedb.org/3/list/8304403?language=en-US&page=1',
+        pictures: 'https://image.tmdb.org/t/p/w200/'
+    }
+}
 
  const RoutConfig = { 
     Main: {

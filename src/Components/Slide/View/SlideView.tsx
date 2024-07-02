@@ -1,242 +1,186 @@
-import { useEffect, useRef } from "react";
-import { IviewController } from "../Controller/ViewController";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { AnimView, ControllerConfig, RenderData, RenderUpdate } from "../Controller/ViewController";
 import "./slideView.css";
+import useFetchMovieData, { IMovieItem } from "../Data/DataProvider";
+import {  ApiRequestUrls } from "../../../Environment/Environment";
+import { throttle } from "lodash";
+import transformArrayToRenderData from "../Data/DataFormatter";
 
-export default function SlideView(params: { controller: IviewController }) {
-  const {
-    slotCountView,
-    slotCountSide,
-    animTime,
-    animPercent,
-    onWindowsWidthChange,
-    onButtonClick,
-  } = params.controller;
+function SlideButton({
+  label,
+  amount,
+  increase,
+  onClickCallback
+}:{
+    label:string,
+    amount:number,
+    increase:boolean,
+    onClickCallback: (index:number) => void,
+    //setFunction:React.Dispatch<React.SetStateAction<number>>
+  }){
+    return (<div className="Button" onClick={
+    ()=> {
+      const value = !increase ? amount : -amount;
+      onClickCallback(value);
+    }
+  }>{label}</div>);
+}
 
+function ContainerSlide({
+  data,
+  index,
+  itemWidth,
+  itemCount,
+  anim,
+  animTime
+}:
+  {
+    data:IMovieItem[],
+    index:number,
+    itemWidth:number,
+    itemCount:number,
+    anim: 'Left' | 'None' | 'Right'
+    animTime:number
+  }){
+  const animValueRef = useRef<number>(0);
+  const animTimeRef = useRef<number>(0);
+
+   useEffect(() => {
+    animValueRef.current = itemCount* itemWidth +2;
+    animTimeRef.current = animTime;
+   },[itemWidth]); 
+
+   /*
+   useEffect(()=> {
+    const [prev,current,next] = transformArrayToRenderData<IMovieItem>(data,index,itemCount);
+    updateView(prev,current,next);
+   },[anim]);
+*/
+  const updateView = (prev:IMovieItem[],current:IMovieItem[],next:IMovieItem[])=> {
+    //setRenderUpdate({prevData:prev,viewData:current,nextData:next});
+  }
+
+
+  const [prev,current,next] = transformArrayToRenderData<IMovieItem>(data,index,itemCount);
+  if(anim){
+    //const [prev,current,next] = transformArrayToRenderData<IMovieItem>(data,index,itemCount);
+  if(anim === 'Left'){
+    animValueRef.current =  110;
+  }
+  
+  if(anim === 'None'){
+    animValueRef.current = 0;
+    animTime = 0;
+  }
+
+  if(anim === 'Right'){
+    animValueRef.current =  -110;
+  }
+ // updateView(prev,current,next);
+}
+
+
+  return (<div className="SlideAnimFrame"  style={{
+    transform: `translateX(${animValueRef.current}%)`,
+    transition: `${animTime}ms`,
+  }}>
+<div
+  className="Container">
+      <ItemContainer data={prev} />
+      <ItemContainer data={current} />
+      <ItemContainer data={next} />
+</div>
+</div>);
+}
+
+function ItemContainer({data}:{data:IMovieItem[]}){ 
+  
+  return <div className="Container Subframe">
+  {
+      data.map((value:IMovieItem,index:number) => {             
+        return value ?<div key={index} className="Item"  onClick={() =>{console.log("Item clicked")}}>
+        <img src={ApiRequestUrls.TMDB.pictures + value.poster_path} alt="Image"/>
+      </div>: <div key={index} className="Item" >No Item</div>;
+      })
+      }
+  </div>;
+}
+
+export default function SlideView({controller}:
+{
+  controller:ControllerConfig
+}
+) {
+  console.log("SlideViewRender");
   const viewContainerRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const sideContainerRef = useRef<HTMLDivElement>(null);
+  const movieData = useFetchMovieData(controller.baseUrl,controller.apiKey ||"");
+  const [itemCount,setItemCount] = useState<number>(0);
+  const [index, setIndex] = useState<number>(0);
+  const [animeState,setAnimState] = useState<'Left'|'None'|'Right'>('None');
 
-  const ButtonEvent = (dir: "prev" | "next") => {
-    console.log(dir);
-    onButtonClick(dir, containerRef.current?.clientWidth || 0);
+  useEffect(()=>{
+    console.log("SlideViewEffect");
+    const onWindowSizeChanged = () =>{
+      console.log("onWindowSizeChanged");
+      if(viewContainerRef.current){
+       const newCardCount = Math.max(Math.round(viewContainerRef.current.clientWidth/ (window.innerWidth / 10)), 1);
+        setItemCount(newCardCount);
+      }
+    };
+    onWindowSizeChanged();
+    window.addEventListener("resize",() => {onWindowSizeChanged()});
+  return () => {
+    window.removeEventListener("resize",() => {onWindowSizeChanged()});
   };
+  },[]);
 
-  const update = () => {
-    if (viewContainerRef.current) {
-      onWindowsWidthChange(viewContainerRef.current.clientWidth || 0);
+  const handleWheel = (event:WheelEvent) => {
+    event.preventDefault();
+    if(event.deltaY > 0){ 
+        updateView(itemCount);
+    } else {
+     // updateIndex('prev');
+     updateView(-itemCount);
     }
   };
 
-  useEffect(() => {
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
+  const throttledInput = throttle((e) => {handleWheel(e)},300);
 
-  return (
-    <div className="Frame">
-      <div
-        className="Button"
-        onClick={() => {
-          ButtonEvent("prev");
-        }}
-      >
-        Button
-      </div>
-      <div className="Viewport" ref={viewContainerRef}>
-        <div
-          className="Container"
-          ref={containerRef}
-          style={{
-            transform: `translateX(${animPercent}%)`,
-            transition: `${animTime}ms`,
-          }}
-        >
-          <div className="Container Subframe" ref={sideContainerRef}>
-            {[...Array(slotCountSide).keys()].map((value) => (
-              <div key={value} className="Item">
-                prevSide:{value + 1}
-              </div>
-            ))}
-          </div>
-          <div className="Container Subframe">
-            {[...Array(slotCountView).keys()].map((value) => (
-              <div key={value} className="Item">
-                viewSide:{value + 1}
-              </div>
-            ))}
-          </div>
-          <div className=" Container Subframe">
-            {[...Array(slotCountSide).keys()].map((value) => (
-              <div key={value} className="Item">
-                nextSide:{value + 1}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div
-        className="Button"
-        onClick={() => {
-          ButtonEvent("next");
-        }}
-      >
-        Button
-      </div>
-    </div>
-  );
-}
+  const updateView = (amount:number) =>{
+    if(amount < 0 && index <= 0) return;
+    if(amount > 0 && index >= movieData.length -1) return;
+    const newIndex = index + amount; 
+   console.log(newIndex);
+   if(amount < 0) {
+    setAnimState('Left');
+   }
+   if(amount > 0){
+    setAnimState('Right');
+   }
 
-/*  
-{[...Array(cardCountView).keys()].map((index) => (
-            <div className="Item">{index}</div>
-          ))} */
-
-/*
-function SlideView(params: {
-  tiitle: string;
-  controller: IViewController<IMovieItem>;
-}) {
-  const {
-    Init,
-    curentCardCount,
-    translateX,
-    updateCardCount,
-    onButtonClick,
-    renderData,
-  } = params.controller;
-
-  const viewContainerRef = useRef<HTMLDivElement>(null);
-  const cardContainerRef = useRef<HTMLDivElement>(null);
-
-  const buttonEvent = (dir: "next" | "prev") => {
-    onButtonClick(dir);
-  };
-
-  const update = () => {
-    updateCardCount(viewContainerRef);
-  };
-
-  useEffect(() => {
-    Init();
-    updateCardCount(viewContainerRef);
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  return (
-    <>
-      <div className="MainFrame">
-        <header>
-          <div className="Title"> {params.tiitle}</div>
-        </header>
-        <div className="ComponentGrid">
-          <button
-            className="SlideButtonLeft"
-            onMouseEnter={() => {
-              console.log("enter");
-            }}
-            onClick={() => {
-              buttonEvent("prev");
-            }}
-          >
-            prev
-          </button>
-          <div className="ViewContainer" ref={viewContainerRef}>
-            <ForwardRefCardContainer
-              ref={cardContainerRef}
-              containerLength={curentCardCount}
-              translateX={translateX}
-              renderItems={renderData.prevData}
-            />
-            <ForwardRefCardContainer
-              ref={cardContainerRef}
-              containerLength={curentCardCount}
-              translateX={translateX}
-              renderItems={renderData.viewData}
-            />
-            <ForwardRefCardContainer
-              ref={cardContainerRef}
-              containerLength={curentCardCount}
-              translateX={translateX}
-              renderItems={renderData.nextData}
-            />
-          </div>
-          <button
-            className="SlideButtonRight"
-            onClick={() => {
-              buttonEvent("next");
-            }}
-          >
-            next
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-function ItemContainer(params: {
-  width: number;
-  height: number;
-  index: number;
-  item: string;
-}) {
-  const width = params.width;
-  return (
-    <div
-      className="ItemContainer"
-      style={{
-        width: params.width,
-        height: params.height,
-      }}
-    >
-      <img
-        src={`https://image.tmdb.org/t/p/w300/${params.item}`}
-        className="Image"
-        alt="Epmty"
-      />
-    </div>
-  );
-}
-
-const ForwardRefCardContainer = forwardRef<
-  HTMLDivElement,
-  {
-    ref: ForwardedRef<HTMLDivElement>;
-    containerLength: number;
-    translateX: {
-      transformDirPercentage: number;
-      transitionDuration: number;
-    };
-    renderItems: IMovieItem[];
+   setTimeout(()=>{
+    const newIndex = index + amount;
+    setIndex(newIndex); 
+    resetAnim();
+   },2500);
   }
->((props, ref) => {
+
+  const resetAnim = () => {
+    setAnimState('None');
+  }
+
   return (
-    <div
-      ref={ref}
-      className="CardContainer"
-      style={{
-        transform: `translateX(${props.translateX.transformDirPercentage}%)`,
-        transition: `${props.translateX.transitionDuration}ms`,
-      }}
-    >
-      {Array.from({ length: props.containerLength }, (_, i) => i).map(
-        (value: number) => {
-          return (
-            <ItemContainer
-              key={value}
-              height={100}
-              width={150}
-              index={value}
-              item={props.renderItems[value].poster_path}
-            />
-          );
-        },
-      )}
+    <div className="Frame"  onWheel={throttledInput}>
+      <SlideButton label="prev" amount={itemCount} increase={true} onClickCallback={updateView}/>
+      <div className="Viewport" ref={viewContainerRef}>
+          <ContainerSlide data={movieData} itemCount={itemCount} index={index} animTime={2000} itemWidth={window.innerWidth / 10} anim={animeState} />
+      </div>
+      <SlideButton label="next" amount={itemCount} increase={false} onClickCallback={updateView}/>
     </div>
   );
-});
+}
 
-export default SlideView;
-*/
+function uuseMemo(arg0: () => [IMovieItem[], IMovieItem[], IMovieItem[]], arg1: IMovieItem[][]): [any, any, any] {
+  throw new Error("Function not implemented.");
+}
+

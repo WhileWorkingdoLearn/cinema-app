@@ -1,12 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { useState } from "react";
-import { ApiKeys } from "../../../Environment/Environment";
-import DLList from "../../../Model/DLList";
-
-export interface IDataProvider<T> {
-  fetchData: () => void;
-  data: T;
-}
+import { useEffect, useState } from "react";
 
 export interface IMovieItem {
   id: number;
@@ -25,56 +18,29 @@ export interface IMovieListResponse {
   page: number;
 }
 
-export function GetDataAxios<T extends {}>(
-  url: string,
-  onDataCHanged: (data: T) => void,
-) {
-  const client = axios.create({
-    baseURL: "https://api.themoviedb.org/3/list/",
-    timeout: 3000,
-    headers: {
-      Authorization: `Bearer ${ApiKeys.TMDB.readerKey}`,
-    },
-  });
+export default function useFetchMovieData(url:string,key :string):IMovieItem[]{
+    const [data,setData] = useState<IMovieItem[]>([]);
 
-  async function axiosGetJsonData(url: string) {
-    try {
-      const response: AxiosResponse = await client.get(url);
-      const responseData: T = response.data;
-      console.log(responseData);
-      onDataCHanged(responseData);
-    } catch (error: any) {
-      console.log(error.message);
-    }
-  }
+    useEffect(() => {
+      console.log("FetchMovieDataEffect");
+      axios.get<IMovieListResponse>(url,{
+        timeout: 3000,
+        headers: {
+          Authorization: `Bearer ${key}`,
+        },
+      }).then((response:AxiosResponse) => {
+        const movieResponse : IMovieListResponse = response.data; 
+        //console.log(movieResponse.items); 
+        setData(() => movieResponse.items);
 
-  axiosGetJsonData(url);
+     });
+    },[url,key]);
+
+    return data;
 }
 
-//IMovieListResponse
-export default function DataHandler(): IDataProvider<DLList<IMovieItem>> {
-  const [movieData, setMovieData] = useState<DLList<IMovieItem>>();
-  //"8304403?language=en-US&page=1"
-  const fetchAxios = () => {
-    GetDataAxios<IMovieListResponse>(
-      "8304403?language=en-US&page=1",
-      MapMovieListToDataFields,
-    );
-  };
+//https://api.themoviedb.org/3/list/8304403?language=en-US&page=1"
 
-  const MapMovieListToDataFields = (data: IMovieListResponse) => {
-    const MovieList = new DLList<IMovieItem>();
-    MovieList.fromArray(data.items);
-    setMovieData(MovieList);
-  };
-
-  return {
-    fetchData: () => {
-      fetchAxios();
-    },
-    data: movieData,
-  } as IDataProvider<DLList<IMovieItem>>;
-}
 
 /*
 export type MovieGengre = [
