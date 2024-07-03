@@ -1,21 +1,11 @@
 import SlideView from "../Components/Slide/View/SlideView";
-import useViewController, { ControllerConfig } from "../Components/Slide/Controller/ViewController";
 import { ApiKeys, ApiRequestUrls } from "../Environment/Environment";
 
-
-function Image() {
-  return <div>Hello</div>;
-}
-
-
-
-
 function MainPage() {
-
-  const config  = {
-    baseUrl:ApiRequestUrls.TMDB.movieList,
+  const config = {
+    baseUrl: ApiRequestUrls.TMDB.movieList,
     apiKey: ApiKeys.TMDB.readerKey,
-    animDeltaT:500,
+    animDeltaT: 500,
   };
 
   return (
