@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
-import { IMovieItem } from "../Data/DataProvider";
-import { ItemContainer } from "./SlideView";
+import  ItemContainer from "./ItemViews/ItemContainer"
 import transformArrayToRenderData from "../Data/DataFormatter";
 import "./slideView.css";
 
-export default function ContainerSlide({
+export default function ContainerSlide<T>({
   data,
   index,
   itemWidth,
@@ -12,7 +11,9 @@ export default function ContainerSlide({
   anim,
   animTime,
 }: {
-  data: IMovieItem[];
+  data:  {   data: T[],
+  item:(input:T)=>React.ReactNode,
+  }
   index: number;
   itemWidth: number;
   itemCount: number;
@@ -27,16 +28,16 @@ export default function ContainerSlide({
   }, [itemWidth, itemCount, animTime]);
 
   console.log("itemCount: " + itemCount);
-  let [prev, current, next] = transformArrayToRenderData<IMovieItem>(
-    data,
+  let [prev, current, next] = transformArrayToRenderData<T>(
+    data.data,
     index,
     itemCount,
   );
   if (anim) {
-    //const [prev,current,next] = transformArrayToRenderData<IMovieItem>(data,index,itemCount);
+
     if (anim === "Right") {
       console.log("Right");
-      animValueRef.current = 45;
+      animValueRef.current = 57;
       next = [];
     }
 
@@ -49,16 +50,15 @@ export default function ContainerSlide({
 
     if (anim === "Left") {
       console.log("Left");
-      animValueRef.current = -45;
+      animValueRef.current = -57;
       prev = [];
     }
-    //updateView(prev, current, next);
+
   }
   if (index <= 0) {
     prev = [];
   }
 
-  console.log(current);
   return (
     <div
       className="SlideAnimFrame"
@@ -68,9 +68,9 @@ export default function ContainerSlide({
       }}
     >
       <div className="Container">
-        <ItemContainer data={prev} />
-        <ItemContainer data={current} />
-        <ItemContainer data={next} />
+       <ItemContainer data={prev} element={data.item}/>
+       <ItemContainer data={current} element={data.item}/>
+       <ItemContainer data={next} element={data.item}/>
       </div>
     </div>
   );

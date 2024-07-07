@@ -1,5 +1,3 @@
-import axios, { AxiosResponse } from "axios";
-import { useEffect, useState } from "react";
 
 export interface IMovieItem {
   id: number;
@@ -8,7 +6,7 @@ export interface IMovieItem {
   title: string;
 }
 
-export interface IMovieListResponse {
+export default interface IMovieListResponse {
   description: string;
   id: number;
   iso_639_1: string;
@@ -18,26 +16,6 @@ export interface IMovieListResponse {
   page: number;
 }
 
-export default function useFetchMovieData(url:string,key :string):IMovieItem[]{
-    const [data,setData] = useState<IMovieItem[]>([]);
-
-    useEffect(() => {
-      console.log("FetchMovieDataEffect");
-      axios.get<IMovieListResponse>(url,{
-        timeout: 3000,
-        headers: {
-          Authorization: `Bearer ${key}`,
-        },
-      }).then((response:AxiosResponse) => {
-        const movieResponse : IMovieListResponse = response.data; 
-        //console.log(movieResponse.items); 
-        setData(() => movieResponse.items);
-
-     });
-    },[url,key]);
-
-    return data;
-}
 
 //https://api.themoviedb.org/3/list/8304403?language=en-US&page=1"
 

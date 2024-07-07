@@ -1,3 +1,6 @@
+import useFetchMovieData from "../Components/Slide/Data/DataInterfaces";
+import { ItemView } from "../Components/Slide/View/ItemViews/ItemView";
+import Slide from "../Components/Slide/View/SlideView";
 import SlideView from "../Components/Slide/View/SlideView";
 import { ApiKeys, ApiRequestUrls } from "../Environment/Environment";
 
@@ -15,13 +18,13 @@ function MainPage() {
           display: "flex",
           justifyContent: "center",
           backgroundColor: "black",
-          flex: "100",
         }}
       >
-        <SlideView controller={config} />
+       <Slide/> 
       </div>
     </>
   );
 }
 
 export default MainPage;
+//<SlideView controller={config} dataProvider={useFetchMovieData} itemView={(props) => ItemView({data:props})}/>

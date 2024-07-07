@@ -1,9 +1,95 @@
-import { useEffect, useRef, useState } from "react";
+import { CSSProperties, useRef } from "react";
 import "./slideView.css";
-import useFetchMovieData, { IMovieItem } from "../Data/DataProvider";
-import { ApiRequestUrls } from "../../../Environment/Environment";
+import { SlideButton } from "./SlideButton";
+import useItemCalculator from "../Hooks/useItemCalculator";
+import useFetchMovieData from "../Hooks/useFetchMovieData";
+import { ApiKeys, ApiRequestUrls } from "../../../Environment/Environment";
+import useDataToView from "../Hooks/useDataToView";
+
+
+export default function Slide(){
+
+
+  const ContainerStyle: CSSProperties = {
+    display:"flex",
+    height:'20rem',
+    width:'100%',
+    backgroundColor:'blue',
+    justifyContent:'center'
+  }
+  const ViewStyle: CSSProperties = {
+    display:"flex",
+    width: '80%',
+    backgroundColor:'red',
+    justifyContent:'center',
+    overflow:'hidden'
+  }
+
+  const SlideStyle :CSSProperties = {
+    display:'flex',
+    width:'100%',
+    justifyContent:'center',
+  }
+
+  const ItemStyle :CSSProperties = {
+    color:'white',
+    margin: '2px',
+    padding:'2px',
+    height:'100%',
+    flex: '0 0 200px',
+    backgroundColor:'gray',
+    objectFit: 'contain',
+    textAlign:'center'
+  }
+
+  const AnimStyle : CSSProperties = {
+    transform:'translate3d(-116, 0, 0)'
+  }
+
+  const viewRef = useRef<HTMLDivElement>(null);
+  const indexRef = useRef<number>(0);
+  const [itemCount,totalCount] = useItemCalculator(viewRef.current?.clientWidth || 1024,200);
+  const data = useFetchMovieData(ApiRequestUrls.TMDB.movieList,ApiKeys.TMDB.readerKey);
+  const viewData = useDataToView(data,indexRef.current,totalCount || 0);
+  const onIncrease = (amount:number) => {
+    const numberOfSlides = Math.ceil(data.length / itemCount);
+    const indexVal = (indexRef.current * amount);
+
+    if(amount < 0 && indexVal <= 0){
+      indexRef.current = numberOfSlides;
+    }  
+      
+    indexRef.current = indexRef.current + amount;      
+    
+    if(amount > 0 && indexVal >= numberOfSlides){
+      indexRef.current = 0;      
+    } 
+
+    console.log("NumberOfSlides: " + numberOfSlides + " Amount: " + amount +  " IndexVal: " + indexVal);
+    //indexRef.current = indexRef.current + index;
+  }
+  console.log(viewData);
+  return (
+  <div style={ContainerStyle} className="Conainer">
+    <SlideButton increase={true} amount={itemCount} label="&#10094;" onClickCallback={onIncrease}/>
+    <div style={ViewStyle} className="View" ref={viewRef}>
+      <div style={SlideStyle}> 
+       {viewData.map((value,index) =>  value ? <img loading="lazy" style={ItemStyle} key={index} src={ApiRequestUrls.TMDB.pictures +value.poster_path}></img> : <div key={index} style={ItemStyle}>No Item</div>) || null}
+    </div>
+    </div>
+    <SlideButton increase={false} amount={itemCount} label="&#10095;" onClickCallback={onIncrease}/>
+  </div>);
+}
+
+/// {Array.from(Array(itemCount).keys()).map((value:number)=> <img style={ItemStyle}>Item + {value}</img> )}
+/*
+import { useCallback, useEffect, useRef, useState } from "react";
+import "./slideView.css";
+
 import { throttle } from "lodash";
 import ContainerSlide from "./ContainerSlide";
+import { SlideButton } from "./Slideutton";
+
 
 export interface ControllerConfig {
   baseUrl: string;
@@ -11,76 +97,28 @@ export interface ControllerConfig {
   animDeltaT: number;
 }
 
-export function SlideButton({
-  label,
-  amount,
-  increase,
-  onClickCallback,
-}: {
-  label: string;
-  amount: number;
-  increase: boolean;
-  onClickCallback: (index: number) => void;
-  //setFunction:React.Dispatch<React.SetStateAction<number>>
-}) {
-  return (
-    <div
-      className="Button"
-      onClick={() => {
-        const value = !increase ? amount : -amount;
-        onClickCallback(value);
-      }}
-    >
-      {label}
-    </div>
-  );
-}
 
-export function ItemContainer({ data }: { data: IMovieItem[] }) {
-  // console.log(data);
-
-  return (
-    <div className="Container Subframe">
-      {data.map((value: IMovieItem, index: number) => {
-        return value ? (
-          <div
-            key={index}
-            className="Item"
-            onClick={() => {
-              console.log("Item clicked");
-            }}
-          >
-            <img
-              src={ApiRequestUrls.TMDB.pictures + value.poster_path}
-              alt="No Data"
-            />
-          </div>
-        ) : (
-          <div key={index} className="Item">
-            No Item
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-export default function SlideView({
+export default function SlideView<T extends {},N extends React.ReactNode>({
   controller,
+  dataProvider,
+  itemView
 }: {
-  controller: ControllerConfig;
+  controller: {
+    baseUrl: string,
+    apiKey: string,
+    animDeltaT: number,
+  };
+  dataProvider:(url:string,key:string) => T[];
+  itemView:(input:T) => N;
 }) {
   console.log("SlideViewRender");
-  const AnimtTime = 1000;
+  const AnimtTime = 1500;
   const viewContainerRef = useRef<HTMLDivElement>(null);
   const itemWidth = useRef<number>(0);
-  const movieData = useFetchMovieData(
-    controller.baseUrl,
-    controller.apiKey || "",
-  );
+  const movieData =dataProvider(controller.baseUrl,controller.apiKey);
   const [itemCount, setItemCount] = useState<number>(0);
   const [index, setIndex] = useState<number>(0);
-  const [animeState, setAnimState] = useState<"Left" | "None" | "Right">(
+  const [animState, setAnimState] = useState<"Left" | "None" | "Right">(
     "None",
   );
 
@@ -91,7 +129,7 @@ export default function SlideView({
       if (viewContainerRef.current) {
         itemWidth.current = Math.max(window.innerWidth / 10, 250);
         const newCardCount = Math.max(
-          Math.ceil(viewContainerRef.current.offsetWidth / itemWidth.current),
+          Math.ceil(viewContainerRef.current.offsetWidth / itemWidth.current) +1,
           1,
         );
         console.log(
@@ -102,8 +140,11 @@ export default function SlideView({
         );
         setItemCount((itemCount: number) => newCardCount);
       }
+    
     };
     onWindowSizeChanged();
+
+
     window.addEventListener("resize", () => {
       onWindowSizeChanged();
     });
@@ -157,23 +198,23 @@ export default function SlideView({
   return (
     <div className="Frame" onWheel={throttledInput}>
       <SlideButton
-        label="prev"
+        label="&#10094;"
         amount={itemCount}
         increase={true}
         onClickCallback={updateView}
       />
       <div className="Viewport" ref={viewContainerRef}>
         <ContainerSlide
-          data={movieData}
+          data={{data:movieData,item:itemView}}
           itemCount={itemCount}
           index={index}
           animTime={AnimtTime}
           itemWidth={itemWidth.current}
-          anim={animeState}
+          anim={animState}
         />
       </div>
       <SlideButton
-        label="next"
+        label="&#10095;"
         amount={itemCount}
         increase={false}
         onClickCallback={updateView}
@@ -181,3 +222,4 @@ export default function SlideView({
     </div>
   );
 }
+*/
