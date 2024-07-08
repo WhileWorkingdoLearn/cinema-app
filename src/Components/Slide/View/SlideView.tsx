@@ -1,86 +1,132 @@
-import { CSSProperties, useRef } from "react";
+import { CSSProperties, useRef, useState } from "react";
 import "./slideView.css";
 import { SlideButton } from "./SlideButton";
 import useItemCalculator from "../Hooks/useItemCalculator";
 import useFetchMovieData from "../Hooks/useFetchMovieData";
 import { ApiKeys, ApiRequestUrls } from "../../../Environment/Environment";
 import useDataToView from "../Hooks/useDataToView";
+import useAnimCalculator from "../Hooks/useAnimCalculator";
 
-
-export default function Slide(){
-
-
+export default function Slide() {
   const ContainerStyle: CSSProperties = {
-    display:"flex",
-    height:'20rem',
-    width:'100%',
-    backgroundColor:'blue',
-    justifyContent:'center'
-  }
+    display: "flex",
+    height: "20rem",
+    width: "100%",
+    backgroundColor: "blue",
+    justifyContent: "center",
+  };
   const ViewStyle: CSSProperties = {
-    display:"flex",
-    width: '80%',
-    backgroundColor:'red',
-    justifyContent:'center',
-    overflow:'hidden'
-  }
+    display: "flex",
+    width: "80%",
+    backgroundColor: "red",
+    justifyContent: "center",
+    overflow: "hidden",
+  };
 
-  const SlideStyle :CSSProperties = {
-    display:'flex',
-    width:'100%',
-    justifyContent:'center',
-  }
+  const SlideStyle: CSSProperties = {
+    display: "flex",
+    width: "100%",
+    justifyContent: "center",
+  };
 
-  const ItemStyle :CSSProperties = {
-    color:'white',
-    margin: '2px',
-    padding:'2px',
-    height:'100%',
-    flex: '0 0 200px',
-    backgroundColor:'gray',
-    objectFit: 'contain',
-    textAlign:'center'
-  }
-
-  const AnimStyle : CSSProperties = {
-    transform:'translate3d(-116, 0, 0)'
-  }
+  const ItemStyle: CSSProperties = {
+    color: "white",
+    margin: "2px",
+    padding: "2px",
+    height: "100%",
+    flex: "0 0 200px",
+    backgroundColor: "gray",
+    objectFit: "contain",
+    textAlign: "center",
+  };
 
   const viewRef = useRef<HTMLDivElement>(null);
-  const indexRef = useRef<number>(0);
-  const [itemCount,totalCount] = useItemCalculator(viewRef.current?.clientWidth || 1024,200);
-  const data = useFetchMovieData(ApiRequestUrls.TMDB.movieList,ApiKeys.TMDB.readerKey);
-  const viewData = useDataToView(data,indexRef.current,totalCount || 0);
-  const onIncrease = (amount:number) => {
-    const numberOfSlides = Math.ceil(data.length / itemCount);
-    const indexVal = (indexRef.current * amount);
+  const [index, setIndex] = useState<number>(0);
 
-    if(amount < 0 && indexVal <= 0){
-      indexRef.current = numberOfSlides;
-    }  
-      
-    indexRef.current = indexRef.current + amount;      
-    
-    if(amount > 0 && indexVal >= numberOfSlides){
-      indexRef.current = 0;      
-    } 
+  const [itemCount, totalCount] = useItemCalculator(
+    viewRef.current?.clientWidth || 1024,
+    200,
+  );
+  const data = useFetchMovieData(
+    ApiRequestUrls.TMDB.movieList,
+    ApiKeys.TMDB.readerKey,
+  );
+  const { view } = useDataToView(data, index, totalCount || 0);
 
-    console.log("NumberOfSlides: " + numberOfSlides + " Amount: " + amount +  " IndexVal: " + indexVal);
-    //indexRef.current = indexRef.current + index;
-  }
-  console.log(viewData);
+  const anim = useAnimCalculator();
+
+  const onIncrease = (amount: number) => {
+    if (amount < 0) {
+      setIndex(index - 1 - (totalCount - itemCount));
+      if (index <= 0) {
+        setIndex(data.length - (totalCount - itemCount));
+      }
+    }
+    if (amount > 0) {
+      setIndex(index - 1 + (totalCount - itemCount));
+      if (index >= data.length - (totalCount - itemCount)) {
+        setIndex(0);
+      }
+    }
+  };
+
   return (
-  <div style={ContainerStyle} className="Conainer">
-    <SlideButton increase={true} amount={itemCount} label="&#10094;" onClickCallback={onIncrease}/>
-    <div style={ViewStyle} className="View" ref={viewRef}>
-      <div style={SlideStyle}> 
-       {viewData.map((value,index) =>  value ? <img loading="lazy" style={ItemStyle} key={index} src={ApiRequestUrls.TMDB.pictures +value.poster_path}></img> : <div key={index} style={ItemStyle}>No Item</div>) || null}
+    <div style={ContainerStyle} className="Conainer">
+      <SlideButton
+        increase={true}
+        amount={1}
+        label="&#10094;"
+        onClickCallback={onIncrease}
+      />
+      <div style={ViewStyle} className="View" ref={viewRef}>
+        <div style={SlideStyle}>
+          {view.map((value, index) =>
+            value ? (
+              <img
+                loading="lazy"
+                style={ItemStyle}
+                key={index}
+                src={ApiRequestUrls.TMDB.pictures + value.poster_path}
+                alt=""
+              ></img>
+            ) : (
+              <div key={index} style={ItemStyle}>
+                No Item
+              </div>
+            ),
+          ) || null}
+        </div>
+      </div>
+      <SlideButton
+        increase={false}
+        amount={1}
+        label="&#10095;"
+        onClickCallback={onIncrease}
+      />
     </div>
-    </div>
-    <SlideButton increase={false} amount={itemCount} label="&#10095;" onClickCallback={onIncrease}/>
-  </div>);
+  );
 }
 
+/*Ich benötige eine Funktion in Typescript, die folgendes machen soll: Ich habe ein Feld A -> A=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+und ein Feld B, mit variabler länge. Die Funktion soll zyklisch über Feld B iterieren und folgende Input parameter haben func(data:T[],index:number,feldLength:number).
+Die Kalkulation der Feldlength und die Postion den Indexes ist folgende : 
+      
+const countOfItemsInView = Math.max(Math.floor(viewSize / itemSize), 1);
+const countItemsOutOfView = Math.max(countOfItemsInView - 1, 1); 
+Der Paramter Feldlength ist immer mindestens 3. 
+
+Das Feld B soll zum Beispiel so aussehen:
+(FeldA, index = 0,feldLength = 4) => [15,0,1,2,3]
+(FeldA, index = 7,feldLength = 4) => [6,7,8,9,10]
+(FeldA, index = 15,feldLength = 4) => [15,0,1,2,3]
+
+
+ A=  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+B= [0,1,2]
+
+Wenn Feld A ungerade ist und FeldB gerade ist könnte es beim iterieren evtl. u einem edgecase kommen.
+
+ */
 /// {Array.from(Array(itemCount).keys()).map((value:number)=> <img style={ItemStyle}>Item + {value}</img> )}
 /*
 import { useCallback, useEffect, useRef, useState } from "react";
