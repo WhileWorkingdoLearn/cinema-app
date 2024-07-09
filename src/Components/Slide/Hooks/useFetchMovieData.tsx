@@ -14,8 +14,7 @@ export default function useFetchMovieData(url:string,key :string):IMovieItem[]{
         },
       }).then((response:AxiosResponse) => {
         const movieResponse : IMovieListResponse = response.data; 
-        //console.log(movieResponse.items); 
-        setData(() => movieResponse.items);
+        setData(() => movieResponse.items.slice());
 
      }).catch(
       (reason:any)=> {console.log(reason)}

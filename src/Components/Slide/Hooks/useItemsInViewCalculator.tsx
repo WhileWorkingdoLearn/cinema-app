@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function useItemCalculator(viewSize: number, itemSize: number) {
+export default function useItemsInViewCalculator(viewSize: number, itemSize: number) {
   const [itemCount, setItemCount] = useState<[number, number]>([0, 0]);
 
   useEffect(() => {

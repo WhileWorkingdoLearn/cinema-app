@@ -1,7 +1,6 @@
-import useFetchMovieData from "../Components/Slide/Data/DataInterfaces";
+import useFetchMovieData, { IMovieItem } from "../Components/Slide/Data/DataInterfaces";
 import { ItemView } from "../Components/Slide/View/ItemViews/ItemView";
 import Slide from "../Components/Slide/View/SlideView";
-import SlideView from "../Components/Slide/View/SlideView";
 import { ApiKeys, ApiRequestUrls } from "../Environment/Environment";
 
 function MainPage() {
@@ -20,7 +19,7 @@ function MainPage() {
           backgroundColor: "black",
         }}
       >
-       <Slide/> 
+       <Slide Item={(props:IMovieItem) => ItemView({data:props})}/> 
       </div>
     </>
   );

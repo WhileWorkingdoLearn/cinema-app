@@ -1,32 +1,25 @@
 
-export interface Input<T> {
-    data: T[],
-    element: (data:T) => React.ReactNode;
-};
+import { IMovieItem } from "../../Data/DataInterfaces";
+import "../../View/slideView.css"
+import { ItemView } from "./ItemView";
 
 
+export default function ItemContainer<T>({ data,element}: {
+  data: T[],
+  element: (data:T) => React.ReactNode;
+}) {
 
-export default function ItemContainer<T>({ data,element}:Input<T>) {
-    // console.log(data);
-  
     return (
-      <div className="Container Subframe">
+      <div className="Container">
         {data.map((value: T, index: number) => {
           return value ? (
             <div
               key={index}
               className="Item"
-              onClick={() => {
-                console.log("Item clicked");
-              }}
-            >
-                {element(value)}
+             >
+               <ItemView key={index} data={value as unknown as IMovieItem}/>
             </div>
-          ) : (
-            <div key={index} className="Item">
-              No Item
-            </div>
-          );
+          ) : null;
         })}
       </div>
     );
