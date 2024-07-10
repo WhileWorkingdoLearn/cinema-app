@@ -1,15 +1,8 @@
-import useFetchMovieData, { IMovieItem } from "../Components/Slide/Data/DataInterfaces";
 import { ItemView } from "../Components/Slide/View/ItemViews/ItemView";
 import Slide from "../Components/Slide/View/SlideView";
-import { ApiKeys, ApiRequestUrls } from "../Environment/Environment";
+import DataContextProvider from "../Context/DataContext";
 
 function MainPage() {
-  const config = {
-    baseUrl: ApiRequestUrls.TMDB.movieList,
-    apiKey: ApiKeys.TMDB.readerKey,
-    animDeltaT: 500,
-  };
-
   return (
     <>
       <div
@@ -19,7 +12,14 @@ function MainPage() {
           backgroundColor: "black",
         }}
       >
-       <Slide Item={(props:IMovieItem) => ItemView({data:props})}/> 
+        <DataContextProvider>
+          <Slide
+            Item={(props) => ItemView({ data: props })}
+            onItemClicked={(clickedData) => {
+              console.log(clickedData);
+            }}
+          />
+        </DataContextProvider>
       </div>
     </>
   );

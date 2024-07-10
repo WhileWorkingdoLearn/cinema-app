@@ -1,27 +1,32 @@
+import "../../View/slideView.css";
 
-import { IMovieItem } from "../../Data/DataInterfaces";
-import "../../View/slideView.css"
-import { ItemView } from "./ItemView";
-
-
-export default function ItemContainer<T>({ data,element}: {
-  data: T[],
-  element: (data:T) => React.ReactNode;
+export default function ItemContainer<T>({
+  data,
+  element,
+  onItemClicked,
+}: {
+  data: T[];
+  element: (data: T) => React.ReactNode;
+  onItemClicked?: (data: T) => void;
 }) {
-
-    return (
-      <div className="Container">
-        {data.map((value: T, index: number) => {
-          return value ? (
-            <div
-              key={index}
-              className="Item"
-             >
-               <ItemView key={index} data={value as unknown as IMovieItem}/>
-            </div>
-          ) : null;
-        })}
-      </div>
-    );
-  }
-  
+  return (
+    <div className="Container">
+      {data.map((value: T, index: number) => {
+        return value ? (
+          <div
+            key={index}
+            className="Item"
+            onClick={(e) => {
+              e.preventDefault();
+              if (onItemClicked) {
+                onItemClicked(value);
+              }
+            }}
+          >
+            {element(value)}
+          </div>
+        ) : null;
+      })}
+    </div>
+  );
+}
