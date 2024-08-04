@@ -1,23 +1,25 @@
-import { createContext } from "react";
-import useFetchMovieData from "../Components/Slide/Hooks/useFetchMovieData";
-import { IMovieItem } from "../Components/Slide/Data/DataInterfaces";
+import {ReactNode} from "react";
+import useFetchMovieData from "./useFetchMovieData";
+import { IMovieItem } from "./Data/DataInterfaces";
 import { ApiKeys, ApiRequestUrls } from "../Environment/Environment";
+import { createGenericContext } from "./GenericContext";
 
-export const DataContext = createContext<IMovieItem[]>([]);
+// Erstellen des Contexts für den Beispieltyp
+const [useMovieDataContext, DataProvider] = createGenericContext<IMovieItem[]>();
 
-export default function DataContextProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const data = useFetchMovieData(
+// Provider-Komponente
+const MovieDataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const movieData = useFetchMovieData(
     ApiRequestUrls.TMDB.movieList,
     ApiKeys.TMDB.readerKey,
   );
-
+  
   return (
-    <>
-      <DataContext.Provider value={data}>{children}</DataContext.Provider>
-    </>
+    <DataProvider value={{data:movieData}}>
+      {children}
+    </DataProvider>
   );
-}
+};
+
+export { MovieDataProvider, useMovieDataContext };
+

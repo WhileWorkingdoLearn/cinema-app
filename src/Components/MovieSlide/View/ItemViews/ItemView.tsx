@@ -1,4 +1,4 @@
-import { IMovieItem } from "../../Data/DataInterfaces";
+import { IMovieItem } from "../../../../Context/Data/DataInterfaces";
 
 export function ItemView({ data }: { data: IMovieItem }) {
   const isLoading = true;

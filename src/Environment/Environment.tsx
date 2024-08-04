@@ -15,7 +15,12 @@ export const ApiKeys = {
 export const ApiRequestUrls = {
     TMDB:{
         movieList: 'https://api.themoviedb.org/3/list/8304403?language=en-US&page=1',
+        trailerlist: 'https://api.themoviedb.org/3/movie/',
         pictures: 'https://image.tmdb.org/t/p/w200/'
+    },
+    Youtube:{
+        video: 'https://www.youtube.com/watch?v=',
+        img: 'https://img.youtube.com/vi/'
     }
 }
 

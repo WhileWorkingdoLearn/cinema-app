@@ -1,27 +1,25 @@
-import { useEffect, useRef, useState, ReactNode, useContext } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./slideView.css";
 import { SlideButton } from "./SlideButton";
 import useItemsInViewCalculator from "../Hooks/useItemsInViewCalculator";
 import useDataToView from "../Hooks/useDataToView";
 import ItemContainer from "./ItemViews/ItemContainer";
-import { DataContext } from "./Context/DataContext";
+import { useMovieDataContext } from "../../../Context/DataContext";
+import { ItemView } from "./ItemViews/ItemView";
+import { IMovieItem } from "../../../Context/Data/DataInterfaces";
 
-export default function Slide<T>({
-  Item,
-  onItemClicked,
-}: {
-  Item: (input: T) => ReactNode;
-  onItemClicked?: (data: T) => void;
-}) {
+
+export default function Slide({onItemClicked}:{onItemClicked:(data:IMovieItem)=>void}) {
   const [index, setIndex] = useState<number>(0);
   const viewRef = useRef<HTMLDivElement>(null);
   const slideRef = useRef<HTMLDivElement>(null);
-  const data: T[] = useContext(DataContext);
+  const itemWidth = 208;
 
   const [itemCount, totalCount] = useItemsInViewCalculator(
     viewRef.current?.clientWidth || 1024,
-    200,
+    itemWidth,
   );
+  const {data} = useMovieDataContext();
 
   const { view } = useDataToView(data, index, totalCount || 0);
 
@@ -64,9 +62,9 @@ export default function Slide<T>({
 
   let dir = 0;
   if (animation) {
-    let offset = slideRef.current?.clientWidth || 0 - itemCount * 204;
+    let offset = (slideRef.current?.clientWidth || 0) - (itemCount * itemWidth);
     let slideValue =
-      ((itemCount * 200) / (slideRef.current?.clientWidth || 0 - offset)) * 100;
+      ((itemCount * itemWidth) / (slideRef.current?.clientWidth || 0 - offset)) * 100;
     if (animation === "Left") {
       cssAnimClass.transform = slideValue;
       cssAnimClass.transition = animTime;
@@ -103,8 +101,11 @@ export default function Slide<T>({
         >
           <ItemContainer
             data={view}
-            element={Item}
-            onItemClicked={onItemClicked}
+            element={(props) => ItemView({data:props})}
+            onItemClicked={(clickedData) => {
+              console.log(clickedData);
+              onItemClicked(clickedData)
+            }}
           />
         </div>
       </div>
@@ -119,3 +120,4 @@ export default function Slide<T>({
     </div>
   );
 }
+

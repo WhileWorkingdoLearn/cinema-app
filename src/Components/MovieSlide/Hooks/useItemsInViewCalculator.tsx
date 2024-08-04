@@ -10,7 +10,7 @@ export default function useItemsInViewCalculator(
     console.log("SlideViewEffect");
     const onWindowSizeChanged = () => {
       const countOfItemsInView = Math.max(Math.floor(viewSize / itemSize), 1);
-      const countItemsOutOfView = Math.max(countOfItemsInView - 1, 2);
+      const countItemsOutOfView = Math.max(countOfItemsInView -1, 2);
       setItemCount([
         countOfItemsInView,
         countOfItemsInView + countItemsOutOfView * 2,

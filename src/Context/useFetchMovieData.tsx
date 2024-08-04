@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { useState, useEffect } from "react";
-import  IMovieListResponse,{ IMovieItem } from "../Data/DataInterfaces";
+import  IMovieListResponse,{ IMovieItem } from "./Data/DataInterfaces";
 
 export default function useFetchMovieData(url:string,key :string):IMovieItem[]{
     const [data,setData] = useState<IMovieItem[]>([]);
@@ -13,7 +13,7 @@ export default function useFetchMovieData(url:string,key :string):IMovieItem[]{
           Authorization: `Bearer ${key}`,
         },
       }).then((response:AxiosResponse) => {
-        const movieResponse : IMovieListResponse = response.data; 
+        const movieResponse : IMovieListResponse = response.data;
         setData(() => movieResponse.items.slice());
 
      }).catch(

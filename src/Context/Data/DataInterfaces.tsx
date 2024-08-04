@@ -6,6 +6,24 @@ export interface IMovieItem {
   title: string;
 }
 
+
+export interface IMovieTrailerRespone{
+  id:number,
+  results:IMovieTrailer[]
+}
+
+export interface IMovieTrailer {
+  iso_639_1: string,
+  iso_3166_1: string,
+  name: string,
+  key: string,
+  site: string,
+  size: number,
+  type: string,
+  official: boolean,
+  published_at: string,
+  id: string
+}
 export default interface IMovieListResponse {
   description: string;
   id: number;
@@ -15,7 +33,6 @@ export default interface IMovieListResponse {
   name: string;
   page: number;
 }
-
 
 //https://api.themoviedb.org/3/list/8304403?language=en-US&page=1"
 
