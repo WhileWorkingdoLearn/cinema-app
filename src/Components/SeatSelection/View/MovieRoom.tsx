@@ -14,12 +14,18 @@
 */
 
 
-import { CSSProperties } from "react"
+import { CSSProperties, ReactNode, useRef } from "react"
 
 export interface IRowSegment {
     startNumber:number,
     range:number,
     display:boolean
+}
+
+export interface ISeat {
+    id:number,
+    isSold:boolean,
+    isReservated:boolean
 }
 
 const rowStyle :CSSProperties= {
@@ -36,52 +42,80 @@ const collumnStyle :CSSProperties= {
     marginBottom:'20px'
 }
 
-
-export function Seat({boxSize, seatNumber,active}:{boxSize:CSSProperties,seatNumber :number,active:boolean}){
-    const handler = !active ? () => {} : () => {console.log("Click : " + seatNumber)}
-    return (<div style={boxSize} onClick={handler}>{seatNumber} </div>);
+const boxSize : CSSProperties = {
+    width:'5rem',
+    height:'5rem',
+    margin:'5px',
+    textAlign:'center',
+    alignContent:'center',
+    backgroundColor:'red'
 }
 
-export function SeatRange({range,seatNumberStart,display}:{range:number,seatNumberStart:number,display:boolean}){
-    const boxSize : CSSProperties = {
-        width:'5rem',
-        height:'5rem',
-        margin:'5px',
-        textAlign:'center',
-        alignContent:'center',
-        backgroundColor:'red'
-    }
+export interface SeatProps {
+    boxStyle:CSSProperties,
+    seatNumber :number,
+    handleClickEvent?:(seat:ISeat)=>void
+}
 
-    if(!display){
+export interface SegmentProps {
+    range:number,
+    startNumber:number,
+    isActive:boolean
+}
+
+
+function Seat({boxStyle, seatNumber,handleClickEvent}:SeatProps){
+
+    return (<div style={boxStyle} onClick={}>{seatNumber} </div>);
+}
+
+function PlaceHolder({boxStyle}:SeatProps){
+    return (<div style={boxStyle} >X</div>);
+}
+
+export function Segment({range,startNumber,isActive}:SegmentProps){
+
+
+    if(!isActive){
         boxSize.backgroundColor = 'black'
     }
 
-    return <div style={rowStyle}>{
-        [...Array(range).keys()].map((value,index) => Seat({boxSize:boxSize,seatNumber:seatNumberStart +index,active:display}))
-    }</div>
-}
-
-
-
-export function Row({rows}:{rows:IRowSegment[]}){
-    return (<div style={rowStyle}> 
-    {
-        rows.map((value)=> <SeatRange seatNumberStart={value.startNumber} range={value.range} display={value.display}/>)
-    }
-    </div>);
+    return <div style={rowStyle}></div>
 }
 
 
 export default function MovieRoom({roomLayout}:{roomLayout:IRowSegment[][]}){
     
-    return (
+    const onSeatClicked = ()=> {};
 
-    <div style={collumnStyle}>
-        {
-            roomLayout.map((value,index)=><Row key={index} rows={value}/>)
-        }
-    </div>);
+    return <Parent data={[]}>{
+            (rows)=>(<ChildA data={rows}>{
+                (row)=> (<ChildB props={row} component={
+                    (param) =><Seat boxStyle={param.boxStyle} seatNumber={param.seatNumber} handleClickEvent={onSeatClicked}/>}/>)
+            }</ChildA>)}
+        </Parent>
 }
 
 
 
+function Parent({data,children}:{data:IRowSegment[][],children:(props:IRowSegment[])=>React.ReactNode}){
+    const clickEvent = (seat:ISeat)=>{}
+    const props: SeatProps = {
+        boxStyle:{width:"10px"},
+        seatNumber:0,
+        handleClickEvent:clickEvent
+    }
+    return (<div>{data.map((value,index)=> children(value))}</div>);
+}
+
+function ChildA({data,children: component}:{data:IRowSegment[],children:(props:IRowSegment)=>React.ReactNode}){
+    return (<>{data.map((value)=>component(value))}</>);
+}
+
+function ChildB({props,component}:{props:IRowSegment,component:React.FC<SeatProps>}){
+    const item = props.display ? [...Array(props.range).keys()].map(()=> component) : [...Array(props.range).keys()].map(()=> component);
+    return (<div>{
+         [...Array(props.range).keys()]
+         .map((value,index)=> component({seatNumber:index+1,boxStyle:{width:'10px'},handleClickEvent:()=>{}}))        
+         }</div>)
+}
