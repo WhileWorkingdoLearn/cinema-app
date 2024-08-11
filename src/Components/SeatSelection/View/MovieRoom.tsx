@@ -12,7 +12,7 @@
 }
 */
 
-import { CSSProperties, ReactNode, useRef } from "react";
+import { CSSProperties } from "react";
 
 export interface IRowSegment {
   startNumber: number;
@@ -40,115 +40,86 @@ const collumnStyle: CSSProperties = {
   marginBottom: "20px",
 };
 
-const boxSize: CSSProperties = {
-  width: "5rem",
-  height: "5rem",
-  margin: "5px",
-  textAlign: "center",
-  alignContent: "center",
-  backgroundColor: "red",
-};
-
-const boxBlack: CSSProperties = {
-  width: "5rem",
-  height: "5rem",
-  margin: "5px",
-  textAlign: "center",
-  alignContent: "center",
-  backgroundColor: "black",
-};
-
-export interface SeatProps {
-  boxStyle: CSSProperties;
+export function Seat({
+  boxSize,
+  seatNumber,
+  active,
+}: {
+  boxSize: CSSProperties;
   seatNumber: number;
-  handleClickEvent?: (seat: ISeat) => void;
-}
-
-export interface SegmentProps {
-  range: number;
-  startNumber: number;
-  isActive: boolean;
-}
-
-function Seat({ boxStyle, seatNumber, handleClickEvent }: SeatProps) {
+  active: boolean;
+}) {
+  const handler = !active
+    ? () => {}
+    : () => {
+        console.log("Click : " + seatNumber);
+      };
   return (
-    <div style={boxStyle} onClick={() => {}}>
+    <div style={boxSize} onClick={handler}>
       {seatNumber}{" "}
     </div>
   );
 }
 
-function PlaceHolder({ boxStyle }: SeatProps) {
-  return <div style={boxStyle}>X</div>;
-}
-
-export default function CinemaHall({
-  roomLayout,
+export function SeatRange({
+  range,
+  seatNumberStart,
+  display,
 }: {
-  roomLayout: IRowSegment[][];
+  range: number;
+  seatNumberStart: number;
+  display: boolean;
 }) {
-  const onSeatClicked = (seat: ISeat) => {};
-
-  return (
-    <Parent data={roomLayout}>
-      {(rows) => (
-        <Rows data={rows}>
-          {(row) => <Segment props={row} onClicked={onSeatClicked} />}
-        </Rows>
-      )}
-    </Parent>
-  );
-}
-
-function Parent({
-  data,
-  children,
-}: {
-  data: IRowSegment[][];
-  children: (props: IRowSegment[]) => React.ReactNode;
-}) {
-  const clickEvent = (seat: ISeat) => {};
-
-  const props: SeatProps = {
-    boxStyle: { width: "10px" },
-    seatNumber: 0,
-    handleClickEvent: clickEvent,
+  const boxSize: CSSProperties = {
+    width: "5rem",
+    height: "5rem",
+    margin: "5px",
+    textAlign: "center",
+    alignContent: "center",
+    backgroundColor: "red",
   };
 
+  if (!display) {
+    boxSize.backgroundColor = "black";
+  }
+
   return (
-    <div style={collumnStyle}>
-      {data.map((value, index) => children(value))}
+    <div style={rowStyle}>
+      {[...Array(range).keys()].map((value, index) =>
+        Seat({
+          boxSize: boxSize,
+          seatNumber: seatNumberStart + index,
+          active: display,
+        })
+      )}
     </div>
   );
 }
 
-function Rows({
-  data,
-  children: component,
-}: {
-  data: IRowSegment[];
-  children: (props: IRowSegment) => React.ReactNode;
-}) {
-  return <div style={rowStyle}>{data.map((value) => component(value))}</div>;
+export function Row({ rows }: { rows: IRowSegment[] }) {
+  return (
+    <div style={rowStyle}>
+      {rows.map((value) => (
+        <SeatRange
+          seatNumberStart={value.startNumber}
+          range={value.range}
+          display={value.display}
+        />
+      ))}
+    </div>
+  );
 }
 
-function Segment({
-  props,
-  onClicked,
+export default function MovieRoom({
+  roomLayout,
 }: {
-  props: IRowSegment;
-  onClicked: (seat: ISeat) => void;
+  roomLayout: IRowSegment[][];
 }) {
-  const item = props.display
-    ? [...Array(props.range).keys()].map((value, index) =>
-        Seat({
-          boxStyle: boxSize,
-          seatNumber: props.startNumber + index,
-          handleClickEvent: onClicked,
-        })
-      )
-    : [...Array(props.range).keys()].map((_value) =>
-        PlaceHolder({ boxStyle: boxBlack, seatNumber: -1 })
-      );
-  return <div style={rowStyle}>{item}</div>;
+  return (
+    <div style={collumnStyle}>
+      {roomLayout.map((value, index) => (
+        <Row key={index} rows={value} />
+      ))}
+    </div>
+  );
 }
