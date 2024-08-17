@@ -19,15 +19,18 @@
     },
     "build": {
       "name": "build",
-      "command": "npm run build"
+      "command": "npm run build",
+      "runAtStart": false
     },
     "test": {
       "name": "test",
-      "command": "npm run test"
+      "command": "npm run test",
+      "runAtStart": false
     },
     "eject": {
       "name": "eject",
-      "command": "npm run eject"
+      "command": "npm run eject",
+      "runAtStart": false
     }
   }
 }
