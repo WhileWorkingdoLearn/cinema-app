@@ -1,51 +1,34 @@
-import { ApiKeys, ApiRequestUrls } from "../../../Environment/Environment";
-import { IMovieItem, IMovieTrailer } from "../../../Context/Data/DataInterfaces";
+import { ApiRequestUrls } from "../../../Environment/Environment";
+import { IMovieItem} from "../../../Context/Data/DataInterfaces";
 import useFetchMovieTrailer from "../Hooks/useFetchMovieTrailer";
 import  "./MovieDetail.css"
 import ReactPlayer from 'react-player/youtube'
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 
 export function MovieImage({url,onTrailerClicked}:{url:string,onTrailerClicked:()=>void}){
     return <img style={{padding:'2px'}} src={url} onClick={()=> {onTrailerClicked()}}></img>
 }
 
 export function MovieTrailers({movieId}:{movieId:number}){
-    const movies = useFetchMovieTrailer(ApiRequestUrls.TMDB.trailerlist + movieId + "/videos",ApiKeys.TMDB.readerKey);
-    const [trailerUrl,setTrailerUrl] = useState<string[]|string>();
+    const movies = useFetchMovieTrailer(ApiRequestUrls.Gateway.trailerlist + movieId); 
+    const [trailer,setTrailer] =  useState<string>(movies.trailerPaths[0] || '');
 
-    useEffect(()=>{
-        if(movies && movies.length > 0){
-           const trailers = movies.filter((value:IMovieTrailer) => {
-                return value.type === 'Trailer';
-              }).map((trailer)=> {
-                return ApiRequestUrls.Youtube.video + trailer.key;
-              });
-            if(trailers.length > 0){
-                updateTrailerUrl(trailers);
-            }
-        }
-    },[movies])
-
-    const updateTrailerUrl = (id:string[] | string) => {
-        setTrailerUrl(ApiRequestUrls.Youtube.video + id);   
+    const updateTrailerUrl = (url:string)=>{
+        setTrailer(url);
     }
 
-
-    return (
+   return (
         <div>
         <   div className="player-wrapper">
-                <ReactPlayer className='react-player' width='100%' height='100%' volume={0} controls={true} style={{padding:'2px', justifyContent:'center'}} url={trailerUrl} pip={true} stopOnUnmount={false}/>
+                <ReactPlayer className='react-player' width='100%' height='100%' volume={0} controls={true} style={{padding:'2px', justifyContent:'center'}} url={trailer} pip={true} stopOnUnmount={false}/>
             </div>  
             <div className="Flex">
             {
-             movies.filter((value:IMovieTrailer) => {
-                return value.type === 'Trailer';
-              }).map((value => {
-                const path = ApiRequestUrls.Youtube.img + value.key +'/default.jpg'
-                return <MovieImage url={path} onTrailerClicked={()=> {
-                        updateTrailerUrl(value.key);
+             movies.imagePaths.map((value,index) => {
+                return <MovieImage url={value} onTrailerClicked={()=> {
+                        updateTrailerUrl(movies.trailerPaths[index]);
                 }}/>
-            }))
+            })
         }
         </div>
     </div>

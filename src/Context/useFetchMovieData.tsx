@@ -1,25 +1,17 @@
-import axios, { AxiosResponse } from "axios";
-import { useState, useEffect } from "react";
-import  IMovieListResponse,{ IMovieItem } from "./Data/DataInterfaces";
 
-export default function useFetchMovieData(url:string,key :string):IMovieItem[]{
+import { useState, useEffect } from "react";
+import { IMovieItem } from "./Data/DataInterfaces";
+import getData from "../Services/DataReceiver";
+
+export default function useFetchMovieData(url:string):IMovieItem[]{
     const [data,setData] = useState<IMovieItem[]>([]);
 
     useEffect(() => {
+      getData<IMovieItem[]>(url).then((data) => {
       console.log("FetchMovieDataEffect");
-      axios.get<IMovieListResponse>(url,{
-        timeout: 3000,
-        headers: {
-          Authorization: `Bearer ${key}`,
-        },
-      }).then((response:AxiosResponse) => {
-        const movieResponse : IMovieListResponse = response.data;
-        setData(() => movieResponse.items.slice());
-
-     }).catch(
-      (reason:any)=> {console.log(reason)}
-     );
-    },[url,key]);
+      setData(data);
+    });
+    },[url]);
 
     return data;
 }

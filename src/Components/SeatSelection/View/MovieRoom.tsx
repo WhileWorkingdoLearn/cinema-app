@@ -13,6 +13,7 @@
 */
 
 import { CSSProperties } from "react";
+//import SeatLabel from './Images/armchair.png';
 
 export interface IRowSegment {
   startNumber: number;
@@ -35,10 +36,22 @@ const rowStyle: CSSProperties = {
 
 const collumnStyle: CSSProperties = {
   display: "flex",
+  width: "100%",
   flexDirection: "column",
   justifyContent: "center",
   marginBottom: "20px",
 };
+
+
+const imageStyle: CSSProperties = {
+    pointerEvents: "none",
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+    alignContent:'center',
+    zIndex: '-1',
+    transform: 'rotate(180deg)'
+}
 
 export function Seat({
   boxSize,
@@ -55,8 +68,9 @@ export function Seat({
         console.log("Click : " + seatNumber);
       };
   return (
-    <div style={boxSize} onClick={handler}>
-      {seatNumber}{" "}
+    <div style={boxSize} onClick={handler} >
+      {seatNumber}
+      <img src={require('./Images/armchair.png')} style={imageStyle} alt=""/>     
     </div>
   );
 }
@@ -75,22 +89,26 @@ export function SeatRange({
     height: "5rem",
     margin: "5px",
     textAlign: "center",
-    alignContent: "center",
     backgroundColor: "red",
+    position:"relative",
+    zIndex:"1",
+    color:"white"
   };
 
   if (!display) {
     boxSize.backgroundColor = "black";
+    boxSize.color = "black";
   }
 
   return (
-    <div style={rowStyle}>
+    <div style={{...rowStyle,...boxSize}}>
       {[...Array(range).keys()].map((value, index) =>
-        Seat({
-          boxSize: boxSize,
-          seatNumber: seatNumberStart + index,
-          active: display,
-        })
+               <Seat 
+               boxSize={boxSize}
+               seatNumber={seatNumberStart + index}
+               active={display}
+             />
+
       )}
     </div>
   );
@@ -99,8 +117,9 @@ export function SeatRange({
 export function Row({ rows }: { rows: IRowSegment[] }) {
   return (
     <div style={rowStyle}>
-      {rows.map((value) => (
+      {rows.map((value,index) => (
         <SeatRange
+          key={index}
           seatNumberStart={value.startNumber}
           range={value.range}
           display={value.display}
