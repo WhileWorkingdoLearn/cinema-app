@@ -10,7 +10,7 @@ export default function useFetchMovieData(url:string):IMovieItem[]{
       getData<IMovieItem[]>(url).then((data) => {
       console.log("FetchMovieDataEffect");
       setData(data);
-    });
+    }).catch((error) => {console.log(error);});
     },[url]);
 
     return data;

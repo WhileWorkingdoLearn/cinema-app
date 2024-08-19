@@ -4,6 +4,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useLocation } from 'react-router-dom';
 import RoutConfig from '../Environment/Environment';
+import DropdownMenu from '../Components/DropDown/View/DropDownMenu';
 
 
 export function NavTabs() {
@@ -13,7 +14,8 @@ export function NavTabs() {
   const releases = RoutConfig.Main.children[2].path;
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <div style={{display:'flex'}}>
+    <Box sx={{ width: '80%' }}>
       <Tabs
         value={pathname}
         aria-label="nav tabs example"
@@ -25,6 +27,8 @@ export function NavTabs() {
         <Tab label="SneakPeek" href={releases} value={releases}/>
       </Tabs>
     </Box>
+     <DropdownMenu/>
+     </div>
   );
 }
 
